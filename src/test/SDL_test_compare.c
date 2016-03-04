@@ -43,7 +43,7 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
    int bpp, bpp_reference;
    Uint8 *p, *p_reference;
    int dist;
-   int sampleErrorX = 0, sampleErrorY = 0, sampleDist = 0;
+   int sampleErrorX, sampleErrorY, sampleDist;
    Uint8 R, G, B, A;
    Uint8 Rd, Gd, Bd, Ad;
    char imageFilename[128];

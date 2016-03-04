@@ -31,13 +31,13 @@
 
 #include "SDL_mirvideo.h"
 
-struct MIR_Window {
+typedef struct {
     SDL_Window* sdl_window;
-    MIR_Data*   mir_data;
+    MIR_Data* mir_data;
 
     MirSurface* surface;
-    EGLSurface  egl_surface;
-};
+    EGLSurface egl_surface;
+} MIR_Window;
 
 
 extern int
@@ -60,23 +60,8 @@ MIR_MinimizeWindow(_THIS, SDL_Window* window);
 extern void
 MIR_RestoreWindow(_THIS, SDL_Window* window);
 
-extern void
-MIR_HideWindow(_THIS, SDL_Window* window);
-
 extern SDL_bool
 MIR_GetWindowWMInfo(_THIS, SDL_Window* window, SDL_SysWMinfo* info);
-
-extern void
-MIR_SetWindowSize(_THIS, SDL_Window* window);
-
-extern void
-MIR_SetWindowMinimumSize(_THIS, SDL_Window* window);
-
-extern void
-MIR_SetWindowMaximumSize(_THIS, SDL_Window* window);
-
-extern void
-MIR_SetWindowTitle(_THIS, SDL_Window* window);
 
 #endif /* _SDL_mirwindow_h */
 

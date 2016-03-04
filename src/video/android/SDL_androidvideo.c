@@ -36,7 +36,6 @@
 #include "SDL_androidclipboard.h"
 #include "SDL_androidevents.h"
 #include "SDL_androidkeyboard.h"
-#include "SDL_androidmouse.h"
 #include "SDL_androidtouch.h"
 #include "SDL_androidwindow.h"
 
@@ -181,8 +180,6 @@ Android_VideoInit(_THIS)
     Android_InitKeyboard();
 
     Android_InitTouch();
-
-    Android_InitMouse();
 
     /* We're done! */
     return 0;

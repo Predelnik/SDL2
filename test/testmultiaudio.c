@@ -25,7 +25,7 @@ typedef struct
 {
     SDL_AudioDeviceID dev;
     int soundpos;
-    SDL_atomic_t done;
+    volatile int done;
 } callback_data;
 
 callback_data cbd[64];
@@ -46,14 +46,14 @@ play_through_once(void *arg, Uint8 * stream, int len)
     if (len > 0) {
         stream += cpy;
         SDL_memset(stream, spec.silence, len);
-        SDL_AtomicSet(&cbd->done, 1);
+        cbd->done++;
     }
 }
 
 void
 loop()
 {
-    if (SDL_AtomicGet(&cbd[0].done)) {
+    if(cbd[0].done) {
 #ifdef __EMSCRIPTEN__
         emscripten_cancel_main_loop();
 #endif
@@ -100,7 +100,8 @@ test_multi_audio(int devcount)
 #ifdef __EMSCRIPTEN__
             emscripten_set_main_loop(loop, 0, 1);
 #else
-            while (!SDL_AtomicGet(&cbd[0].done)) {
+            while (!cbd[0].done)
+            {
                 #ifdef __ANDROID__                
                 /* Empty queue, some application events would prevent pause. */
                 while (SDL_PollEvent(&event)){}
@@ -135,7 +136,7 @@ test_multi_audio(int devcount)
     while (keep_going) {
         keep_going = 0;
         for (i = 0; i < devcount; i++) {
-            if ((cbd[i].dev) && (!SDL_AtomicGet(&cbd[i].done))) {
+            if ((cbd[i].dev) && (!cbd[i].done)) {
                 keep_going = 1;
             }
         }

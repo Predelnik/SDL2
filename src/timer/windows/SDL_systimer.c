@@ -189,10 +189,6 @@ SDL_Delay(Uint32 ms)
     }
     WaitForSingleObjectEx(mutex, ms, FALSE);
 #else
-    if (!ticks_started) {
-        SDL_TicksInit();
-    }
-
     Sleep(ms);
 #endif
 }

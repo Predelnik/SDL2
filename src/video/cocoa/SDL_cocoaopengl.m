@@ -173,8 +173,6 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         return NULL;
     }
 
-    attr[i++] = NSOpenGLPFAAllowOfflineRenderers;
-
     /* specify a profile if we're on Lion (10.7) or later. */
     if (lion_or_later) {
         NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;

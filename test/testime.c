@@ -159,7 +159,7 @@ void _Redraw(SDL_Renderer * renderer) {
             char *p = utf8_advance(markedText, cursor);
             char c = 0;
             if (!p)
-                p = &markedText[SDL_strlen(markedText)];
+                p = &markedText[strlen(markedText)];
 
             c = *p;
             *p = 0;

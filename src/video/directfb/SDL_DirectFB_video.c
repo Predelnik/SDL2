@@ -121,7 +121,6 @@ DirectFB_CreateDevice(int devindex)
     device->SetWindowIcon = DirectFB_SetWindowIcon;
     device->SetWindowPosition = DirectFB_SetWindowPosition;
     device->SetWindowSize = DirectFB_SetWindowSize;
-    device->SetWindowOpacity = DirectFB_SetWindowOpacity;
     device->ShowWindow = DirectFB_ShowWindow;
     device->HideWindow = DirectFB_HideWindow;
     device->RaiseWindow = DirectFB_RaiseWindow;

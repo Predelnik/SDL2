@@ -340,6 +340,7 @@ Android_RemoveJoystick(int device_id)
         return -1;
     }
 
+    const int retval = item->device_instance;
     if (item->joystick) {
         item->joystick->hwdata = NULL;
     }
@@ -375,7 +376,7 @@ Android_RemoveJoystick(int device_id)
     
     SDL_free(item->name);
     SDL_free(item);
-    return numjoysticks;
+    return retval;
 }
 
 

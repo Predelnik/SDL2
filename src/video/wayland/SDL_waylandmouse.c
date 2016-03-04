@@ -159,11 +159,6 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         SDL_VideoDevice *vd = SDL_GetVideoDevice ();
         SDL_VideoData *wd = (SDL_VideoData *) vd->driverdata;
         Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
-        if (!data) {
-            SDL_OutOfMemory();
-            free(cursor);
-            return NULL;
-        }
         cursor->driverdata = (void *) data;
 
         /* Assume ARGB8888 */
@@ -192,8 +187,6 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         data->hot_y = hot_y;
         data->w = surface->w;
         data->h = surface->h;
-    } else {
-        SDL_OutOfMemory();
     }
 
     return cursor;
@@ -207,11 +200,6 @@ CreateCursorFromWlCursor(SDL_VideoData *d, struct wl_cursor *wlcursor)
     cursor = calloc(1, sizeof (*cursor));
     if (cursor) {
         Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
-        if (!data) {
-            SDL_OutOfMemory();
-            free(cursor);
-            return NULL;
-        }
         cursor->driverdata = (void *) data;
 
         data->buffer = WAYLAND_wl_cursor_image_get_buffer(wlcursor->images[0]);

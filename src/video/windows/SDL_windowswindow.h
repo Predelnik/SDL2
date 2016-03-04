@@ -56,7 +56,6 @@ extern void WIN_SetWindowTitle(_THIS, SDL_Window * window);
 extern void WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon);
 extern void WIN_SetWindowPosition(_THIS, SDL_Window * window);
 extern void WIN_SetWindowSize(_THIS, SDL_Window * window);
-extern int WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity);
 extern void WIN_ShowWindow(_THIS, SDL_Window * window);
 extern void WIN_HideWindow(_THIS, SDL_Window * window);
 extern void WIN_RaiseWindow(_THIS, SDL_Window * window);
