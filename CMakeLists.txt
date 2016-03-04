@@ -1492,8 +1492,46 @@ if(SDL_STATIC)
   target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
 endif()
 
+#----------------------------------------------------------
+#Generate CMake config file.
+
+include(CMakePackageConfigHelpers)
+
+set(PROJECT_VERSION     "${SDL_VERSION}")
+set(generated_dir       "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(config_install_dir  "lib${LIB_SUFFIX}/cmake/${PROJECT_NAME}")
+set(include_install_dir "include/SDL2")
+
+set(version_config      "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config      "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace           "${PROJECT_NAME}::")
+
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(
+    "cmake/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+install(
+    FILES       "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(
+    EXPORT      "${targets_export_name}"
+    NAMESPACE   "${namespace}"
+    DESTINATION "${config_install_dir}"
+)
+
+
 ##### Installation targets #####
 install(TARGETS ${_INSTALL_LIBS}
+  EXPORT "${targets_export_name}"
   LIBRARY DESTINATION "lib${LIB_SUFFIX}"
   ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
   RUNTIME DESTINATION bin)
@@ -1525,6 +1563,8 @@ if(NOT WINDOWS OR CYGWIN)
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "share/aclocal")
 endif()
+
+#----------------------------------------------------------
 
 ##### Uninstall target #####
 
