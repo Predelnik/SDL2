@@ -1532,7 +1532,7 @@ install(
 install(TARGETS ${_INSTALL_LIBS}
   EXPORT "${targets_export_name}"
   ###################################
-  INCLUDES DESTINATION "include/SDL2"
+  INCLUDES DESTINATION "include"
   LIBRARY DESTINATION "lib${LIB_SUFFIX}"
   ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
   RUNTIME DESTINATION bin)
