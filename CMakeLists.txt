@@ -223,10 +223,6 @@ if(EMSCRIPTEN)
   set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
-if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
-    set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
-endif()
-
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
     File Loadso CPUinfo Filesystem Dlopen)
@@ -293,11 +289,6 @@ set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
-
-# TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
-# The options below are for compatibility to configure's default behaviour.
-set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
-set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
 # General source files
 file(GLOB SOURCE_FILES
@@ -1362,52 +1353,6 @@ endif()
 listtostr(EXTRA_CFLAGS _EXTRA_CFLAGS)
 set(EXTRA_CFLAGS ${_EXTRA_CFLAGS})
 
-# Compat helpers for the configuration files
-if(NOT WINDOWS OR CYGWIN)
-  # TODO: we need a Windows script, too
-  execute_process(COMMAND sh ${SDL2_SOURCE_DIR}/build-scripts/updaterev.sh)
-
-  set(prefix ${CMAKE_INSTALL_PREFIX})
-  set(exec_prefix "\${prefix}")
-  set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
-  set(bindir "\${exec_prefix}/bin")
-  set(includedir "\${prefix}/include")
-  if(SDL_STATIC)
-    set(ENABLE_STATIC_TRUE "")
-    set(ENABLE_STATIC_FALSE "#")
-  else()
-    set(ENABLE_STATIC_TRUE "#")
-    set(ENABLE_STATIC_FALSE "")
-  endif()
-  if(SDL_SHARED)
-    set(ENABLE_SHARED_TRUE "")
-    set(ENABLE_SHARED_FALSE "#")
-  else()
-    set(ENABLE_SHARED_TRUE "#")
-    set(ENABLE_SHARED_FALSE "")
-  endif()
-
-  # Clean up the different lists
-  listtostr(EXTRA_LIBS _EXTRA_LIBS "-l")
-  set(SDL_STATIC_LIBS ${SDL_LIBS} ${EXTRA_LDFLAGS} ${_EXTRA_LIBS})
-  list(REMOVE_DUPLICATES SDL_STATIC_LIBS)
-  listtostr(SDL_STATIC_LIBS _SDL_STATIC_LIBS)
-  set(SDL_STATIC_LIBS ${_SDL_STATIC_LIBS})
-  listtostr(SDL_LIBS _SDL_LIBS)
-  set(SDL_LIBS ${_SDL_LIBS})
-
-  # MESSAGE(STATUS "SDL_LIBS: ${SDL_LIBS}")
-  # MESSAGE(STATUS "SDL_STATIC_LIBS: ${SDL_STATIC_LIBS}")
-
-  configure_file("${SDL2_SOURCE_DIR}/sdl2.pc.in"
-    "${SDL2_BINARY_DIR}/sdl2.pc" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config")
-  configure_file("${SDL2_SOURCE_DIR}/sdl2-config.in"
-    "${SDL2_BINARY_DIR}/sdl2-config" @ONLY)
-  configure_file("${SDL2_SOURCE_DIR}/SDL2.spec.in"
-    "${SDL2_BINARY_DIR}/SDL2.spec" @ONLY)
-endif()
 
 ##### Info output #####
 message(STATUS "")
@@ -1439,9 +1384,6 @@ message(STATUS " EXTRA_CFLAGS:  ${EXTRA_CFLAGS}")
 message(STATUS " EXTRA_LDFLAGS: ${EXTRA_LDFLAGS}")
 message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
 message(STATUS "")
-message(STATUS " Build Shared Library: ${SDL_SHARED}")
-message(STATUS " Build Static Library: ${SDL_STATIC}")
-message(STATUS "")
 if(UNIX)
   message(STATUS "If something was not detected, although the libraries")
   message(STATUS "were installed, then make sure you have set the")
@@ -1456,43 +1398,30 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
 set(_INSTALL_LIBS "SDL2main")
 
-if(SDL_SHARED)
-  add_library(SDL2 SHARED ${SOURCE_FILES})
-  if(UNIX)
-    set_target_properties(SDL2 PROPERTIES
-      VERSION ${LT_VERSION}
-      SOVERSION ${LT_REVISION}
-      OUTPUT_NAME "SDL2-${LT_RELEASE}")
-  else()
-    set_target_properties(SDL2 PROPERTIES
-      VERSION ${SDL_VERSION}
-      SOVERSION ${LT_REVISION}
-      OUTPUT_NAME "SDL2")
-  endif()
-  if(MSVC)
-    # Don't try to link with the default set of libraries.
-    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
-    set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
-  endif()
-  set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
-  target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+
+if(WIN32)
+    # Some stupid crap going on with sdl2 on windows, need to explicitly link in
+    # a bunch of c std lib files.
+    # Fix is from: https://forums.libsdl.org/viewtopic.php?p=49026
+
+    set(EXTRA_LIBS
+        debug msvcrtd optimized msvcrt
+        debug vcruntimed optimized vcruntimed
+        debug ucrtd optimized ucrtd
+        ${EXTRA_LIBS}
+    )
 endif()
 
-if(SDL_STATIC)
-  set (BUILD_SHARED_LIBS FALSE)
-  add_library(SDL2-static STATIC ${SOURCE_FILES})
-  set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
-  if(MSVC)
-    set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-    set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
-    set_target_properties(SDL2-static PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
-  endif()
-  # TODO: Win32 platforms keep the same suffix .lib for import and static
-  # libraries - do we need to consider this?
-  set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
-  target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+add_library(SDL2 ${SOURCE_FILES})
+set_target_properties(SDL2 PROPERTIES OUTPUT_NAME "SDL2")
+if(MSVC)
+  set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+  set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+  set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
 endif()
+
+set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
+target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
 
 #----------------------------------------------------------
 #Generate CMake config file.
