@@ -1476,34 +1476,3 @@ foreach(_FNAME ${BIN_INCLUDE_FILES})
 endforeach()
 list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
 install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
-
-if(NOT WINDOWS OR CYGWIN)
-  if(SDL_SHARED)
-    install(CODE "
-      execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      \"libSDL2-2.0.so\" \"libSDL2.so\")")
-    install(FILES ${SDL2_BINARY_DIR}/libSDL2.so DESTINATION "lib${LIB_SUFFIX}")
-  endif()
-  if(FREEBSD)
-    # FreeBSD uses ${PREFIX}/libdata/pkgconfig
-    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc DESTINATION "libdata/pkgconfig")
-  else()
-    install(FILES ${SDL2_BINARY_DIR}/sdl2.pc
-      DESTINATION "lib${LIB_SUFFIX}/pkgconfig")
-  endif()
-  install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
-  # TODO: what about the .spec file? Is it only needed for RPM creation?
-  install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "share/aclocal")
-endif()
-
-#----------------------------------------------------------
-
-##### Uninstall target #####
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
-
-add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
