@@ -1371,6 +1371,18 @@ add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
 set(_INSTALL_LIBS "SDL2main")
 
 
+if(WIN32 AND MSVC AND (MSVC_VERSION GREATER 1900 OR MSVC_VERSION EQUAL 1900))
+    # vs2015 needs some extra libs
+    # Fix is from: https://forums.libsdl.org/viewtopic.php?p=49026
+
+    set(EXTRA_LIBS
+        debug msvcrtd optimized msvcrt
+        debug vcruntimed optimized vcruntimed
+        debug ucrtd optimized ucrtd
+        ${EXTRA_LIBS}
+    )
+endif()
+
 add_library(SDL2 ${SOURCE_FILES})
 
 set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
