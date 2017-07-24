@@ -158,26 +158,6 @@ if(NOT ("$ENV{CFLAGS}" STREQUAL "")) # Hackish, but does the trick on Win32
   list(APPEND EXTRA_LDFLAGS "$ENV{LDFLAGS}")
 endif()
 
-if(MSVC)
-  option(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" OFF)
-  if(FORCE_STATIC_VCRT)
-    foreach(flag_var
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-      if(${flag_var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-      endif()
-    endforeach()
-  endif()
-
-  # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
-  foreach(flag_var
-      CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-    string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
-  endforeach(flag_var)
-endif()
-
 # Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
 # etc. are created correctly.
 set(SDL_LIBS "-lSDL2")
@@ -944,14 +924,6 @@ elseif(WINDOWS)
   file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/windows/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
 
-  if(MSVC)
-    # Prevent codegen that would use the VC runtime libraries.
-    add_definitions(/GS-)
-    if(NOT ARCH_64)
-      add_definitions(/arch:SSE)
-    endif()
-  endif()
-
   # Check for DirectX
   if(DIRECTX)
     if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
@@ -1399,26 +1371,7 @@ add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
 set(_INSTALL_LIBS "SDL2main")
 
 
-if(WIN32)
-    # Some stupid crap going on with sdl2 on windows, need to explicitly link in
-    # a bunch of c std lib files.
-    # Fix is from: https://forums.libsdl.org/viewtopic.php?p=49026
-
-    set(EXTRA_LIBS
-        debug msvcrtd optimized msvcrt
-        debug vcruntimed optimized vcruntimed
-        debug ucrtd optimized ucrtd
-        ${EXTRA_LIBS}
-    )
-endif()
-
 add_library(SDL2 ${SOURCE_FILES})
-set_target_properties(SDL2 PROPERTIES OUTPUT_NAME "SDL2")
-if(MSVC)
-  set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
-  set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
-  set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
-endif()
 
 set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
 target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
