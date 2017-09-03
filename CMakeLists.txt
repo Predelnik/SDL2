@@ -1388,6 +1388,8 @@ add_library(SDL2 ${SOURCE_FILES})
 set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
 target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
 
+add_definitions(-DHAVE_LIBC)
+
 #----------------------------------------------------------
 #Generate CMake config file.
 
