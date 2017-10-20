@@ -183,7 +183,6 @@ if(CYGWIN)
   set(SDL_CFLAGS "${SDL_CFLAGS} -I/usr/include/mingw")
 endif()
 
-add_definitions(-DUSING_GENERATED_CONFIG_H)
 # General includes
 include_directories(${SDL2_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
 
@@ -1309,8 +1308,18 @@ endif()
 #   endif()
 # endif()
 
-configure_file("${SDL2_SOURCE_DIR}/include/SDL_config.h.cmake"
-  "${SDL2_BINARY_DIR}/include/SDL_config.h")
+
+check_c_source_compiles("
+    #ifndef __ANDROID_
+        #error asdf
+    #endif
+    " IS_ANDROID)
+
+if (NOT (IS_ANDROID OR WIN32 OR APPLE))
+    add_definitions(-DUSING_GENERATED_CONFIG_H)
+    configure_file("${SDL2_SOURCE_DIR}/include/SDL_config.h.cmake"
+      "${SDL2_BINARY_DIR}/include/SDL_config.h")
+endif()
 
 # Prepare the flags and remove duplicates
 if(EXTRA_LDFLAGS)
