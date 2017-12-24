@@ -1639,7 +1639,8 @@ set(_INSTALL_LIBS "SDL2main")
 add_library(SDL2 ${SOURCE_FILES})
 
 set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
-target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+target_link_libraries(SDL2main ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS} SDL2main)
 
 add_definitions(-DHAVE_LIBC)
 
